@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  django_app:
+    build: .
+    command: >
+      bash -c "./manage.py collectstatic --noinput && \
+               ./manage.py makemigrations && \
+               ./manage.py migrate && \
+               ./manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/django_app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+    depends_on:
+      - postgres_db
+      - elasticsearch
+
+  postgres_db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=test_db
+      - POSTGRES_USER=test_db_user
+      - POSTGRES_PASSWORD=test_db_user_password
+
+  elasticsearch:
+    image: elasticsearch:7.17.23
+    environment:
+      - discovery.type=single-node
+
+    ports:
+      - "9200:9200"
+
+
+volumes:
+  postgres_data:
+
+
+

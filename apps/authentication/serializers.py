@@ -3,6 +3,7 @@ from typing import Any
 from rest_framework import serializers, exceptions
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework_simplejwt.settings import api_settings
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.authentication.services import generate_jwt_token
 
@@ -84,3 +85,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         attrs["refresh_token"] = str(token_obj)
 
         return attrs
+
+
+class CustomTokenRefreshSerializer(serializers.Serializer):
+    refresh_token = serializers.CharField()
+    access_token = serializers.CharField(read_only=True)
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, str]:
+        refresh_token = RefreshToken(attrs["refresh_token"])
+        return {
+            "access_token": str(refresh_token.access_token)
+        }
